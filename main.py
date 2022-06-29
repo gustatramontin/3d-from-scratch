@@ -33,8 +33,10 @@ triangles.append(np.array([[1,1,0], [1,1,1], [1,0,1]]))
 triangles.append(np.array([[0,0,0], [0,0,1], [0,1,0]]))
 triangles.append(np.array([[0,1,0], [0,1,1], [0,0,1]]))
 
+distance = 15
+
 for t in triangles:
-  t[:,2] += 5
+  t[:,2] += distance
 
 def rotation_matrix_y(angle):
     return np.array([[cos(angle), 0, sin(angle), 0], 
@@ -55,6 +57,14 @@ def translation_matrix(cx, cy, cz):
     [1,0,0,cx],
     [0,1,0,cy],
     [0,0,1,cz],
+    [0,0,0,1]
+  ])
+
+def scale_matrix(sx, sy, sz):
+  return np.array([
+    [sx,0,0,0],
+    [0,sy,0,0],
+    [0,0,sz,0],
     [0,0,0,1]
   ])
 
@@ -83,10 +93,11 @@ while True:
     for vertice in triangle:
       new_vert = np.append(vertice, 1)
       print(new_vert)
-      new_vert = translation_matrix(-0.5,-0.5,-5.5) @ new_vert
+      new_vert = translation_matrix(-0.5,-0.5,-(distance + .5)) @ new_vert
+      new_vert = scale_matrix(2,2,2) @ new_vert
       new_vert = rotation_matrix_y(rotation_y) @ new_vert
       new_vert = rotation_matrix_x(rotation_x) @ new_vert
-      new_vert = translation_matrix(0.5,0.5,5.5) @ new_vert
+      new_vert = translation_matrix(0.5,0.5,distance + .5) @ new_vert
       projected_vert = perspective_projection_matrix(HEIGHT, WIDTH, np.pi/4, 1000, 0.01) @ new_vert
       projected_vert = np.squeeze(projected_vert)
       #print(projected_vert)
@@ -96,11 +107,12 @@ while True:
       
       projected_vert[0] += 1
       projected_vert[1] += 1
-      projected_vert[0] *= 0.65 * WIDTH
-      projected_vert[1] *= 0.65 * HEIGHT
+      projected_vert[0] *= 0.5 * WIDTH
+      projected_vert[1] *= 0.5 * HEIGHT
 
       """projected_vert[0] += WIDTH / 2 / 2
       projected_vert[1] += HEIGHT / 2 / 2"""
+      projected_vert = projected_vert.astype(int)
       projected_vertices.append(projected_vert)
     pg.draw.circle(screen, (255,0,0), (projected_vertices[0][0], projected_vertices[0][1]), 3)
     pg.draw.circle(screen, (255,0,0), (projected_vertices[1][0], projected_vertices[1][1]), 3)
@@ -119,5 +131,7 @@ while True:
   rotation_y += 0.01
   rotation_y %= 2*np.pi
   pg.display.flip()
+
+  
 
   
